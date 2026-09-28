@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/auth/refresh"
+method: POST
+headers:
+  Authorization: Bearer {{refreshToken}}
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Refresh trả 200', function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test('Refresh token được rotate', function () {
+          pm.expect(body.data.refreshToken).to.not.eql(pm.collectionVariables.get('refreshToken'));
+      });
+      pm.collectionVariables.set('accessToken', body.data.token);
+      pm.collectionVariables.set('refreshToken', body.data.refreshToken);
+    language: text/javascript
+order: 3000

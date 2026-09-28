@@ -1,0 +1,30 @@
+$kind: collection
+description: |-
+  Postman collection cho mini SoftAIBox backend trong Java_begin. Chạy collection theo đúng thứ tự để tự động lưu accessToken, refreshToken, conversationId, agentId và executionId.
+
+  Tài khoản USER: dat@softaibox.local / java123
+  Tài khoản ADMIN: admin@softaibox.local / admin123
+variables:
+  baseUrl: http://localhost:8080
+  userEmail: dat@softaibox.local
+  userPassword: java123
+  adminEmail: admin@softaibox.local
+  adminPassword: admin123
+  accessToken: ""
+  refreshToken: ""
+  conversationId: ""
+  agentId: ""
+  executionId: ""
+scripts:
+  - type: http:afterResponse
+    code: |-
+      pm.test('Response time dưới 2 giây', function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+auth:
+  - id: d46360d2-66ce-4f5e-bda7-d4c2506d87a2
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{accessToken}}"

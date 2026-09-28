@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/auth/email/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{userEmail}}",
+      "password": "{{userPassword}}"
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Login trả 200', function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test('Có access và refresh token', function () {
+          pm.expect(body.data.token).to.be.a('string').and.not.empty;
+          pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty;
+      });
+      pm.collectionVariables.set('accessToken', body.data.token);
+      pm.collectionVariables.set('refreshToken', body.data.refreshToken);
+    language: text/javascript
+order: 1000

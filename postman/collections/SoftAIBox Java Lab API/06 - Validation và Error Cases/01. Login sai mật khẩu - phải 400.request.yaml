@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/auth/email/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{userEmail}}",
+      "password": "wrong-password"
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Sai mật khẩu trả 400', function () { pm.response.to.have.status(400); });
+      pm.expect(pm.response.json().code).to.eql('BAD_REQUEST');
+    language: text/javascript
+order: 1000

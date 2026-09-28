@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/agent?page=1&limit=10"
+method: GET
+queryParams:
+  page: "1"
+  limit: "10"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('List agents trả 200', function () { pm.response.to.have.status(200); });
+      pm.expect(pm.response.json().data.agents).to.be.an('array').that.is.not.empty;
+    language: text/javascript
+order: 2000

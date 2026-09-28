@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/chat_conversations?page=1&limit=10&keyword=Java"
+method: GET
+queryParams:
+  page: "1"
+  limit: "10"
+  keyword: Java
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('List trả 200', function () { pm.response.to.have.status(200); });
+      pm.test('Data là array và có metadata', function () {
+          const body = pm.response.json();
+          pm.expect(body.data).to.be.an('array');
+          pm.expect(body.meta.currentPage).to.eql(1);
+      });
+    language: text/javascript
+order: 2000

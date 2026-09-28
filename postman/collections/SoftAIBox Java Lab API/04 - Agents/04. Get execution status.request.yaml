@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/agent/{{agentId}}/executions/{{executionId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Execution status trả 200', function () { pm.response.to.have.status(200); });
+      pm.test('Status hợp lệ', function () {
+          pm.expect(['PENDING', 'RUNNING', 'COMPLETED']).to.include(pm.response.json().data.status);
+      });
+    language: text/javascript
+order: 4000

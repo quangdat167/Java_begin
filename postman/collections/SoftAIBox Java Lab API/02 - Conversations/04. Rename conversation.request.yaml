@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Java Junior Mock Interview"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Rename trả 200', function () { pm.response.to.have.status(200); });
+      pm.test('Title đã đổi', function () {
+          pm.expect(pm.response.json().data.title).to.eql('Java Junior Mock Interview');
+      });
+    language: text/javascript
+order: 4000

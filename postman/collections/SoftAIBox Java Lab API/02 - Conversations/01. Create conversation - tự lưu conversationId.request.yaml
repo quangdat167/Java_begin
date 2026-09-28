@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/chat_conversations"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Java interview practice"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Create trả 201', function () { pm.response.to.have.status(201); });
+      const body = pm.response.json();
+      pm.expect(body.data.id).to.be.a('number');
+      pm.collectionVariables.set('conversationId', String(body.data.id));
+    language: text/javascript
+order: 1000

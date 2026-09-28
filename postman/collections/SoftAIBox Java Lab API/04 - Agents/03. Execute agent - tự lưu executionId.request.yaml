@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/agent/{{agentId}}/executions"
+method: POST
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Execute trả 202 Accepted', function () { pm.response.to.have.status(202); });
+      const body = pm.response.json();
+      pm.collectionVariables.set('executionId', body.data.id);
+    language: text/javascript
+order: 3000

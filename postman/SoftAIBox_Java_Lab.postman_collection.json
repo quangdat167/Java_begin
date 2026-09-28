@@ -1,0 +1,703 @@
+{
+  "info": {
+    "_postman_id": "8af2c66e-9766-4dda-b82c-6d52b404d3b2",
+    "name": "SoftAIBox Java Lab API",
+    "description": "Postman collection cho mini SoftAIBox backend trong Java_begin. Chạy collection theo đúng thứ tự để tự động lưu accessToken, refreshToken, conversationId, agentId và executionId.\n\nTài khoản USER: dat@softaibox.local / java123\nTài khoản ADMIN: admin@softaibox.local / admin123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Response time dưới 2 giây', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "userEmail", "value": "dat@softaibox.local", "type": "string" },
+    { "key": "userPassword", "value": "java123", "type": "string" },
+    { "key": "adminEmail", "value": "admin@softaibox.local", "type": "string" },
+    { "key": "adminPassword", "value": "admin123", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "conversationId", "value": "", "type": "string" },
+    { "key": "agentId", "value": "", "type": "string" },
+    { "key": "executionId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "01. Login USER - tự lưu token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login trả 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Có access và refresh token', function () {",
+                  "    pm.expect(body.data.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(body.data.refreshToken).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set('accessToken', body.data.token);",
+                  "pm.collectionVariables.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/email/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "email", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Get profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Profile trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Đúng USER đang đăng nhập', function () {",
+                  "    pm.expect(pm.response.json().data.email).to.eql(pm.collectionVariables.get('userEmail'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "03. Refresh token - tự thay token cũ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Refresh trả 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Refresh token được rotate', function () {",
+                  "    pm.expect(body.data.refreshToken).to.not.eql(pm.collectionVariables.get('refreshToken'));",
+                  "});",
+                  "pm.collectionVariables.set('accessToken', body.data.token);",
+                  "pm.collectionVariables.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{refreshToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Conversations",
+      "item": [
+        {
+          "name": "01. Create conversation - tự lưu conversationId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create trả 201', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.data.id).to.be.a('number');",
+                  "pm.collectionVariables.set('conversationId', String(body.data.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java interview practice\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations"]
+            }
+          }
+        },
+        {
+          "name": "02. List conversations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('List trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Data là array và có metadata', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data).to.be.an('array');",
+                  "    pm.expect(body.meta.currentPage).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations?page=1&limit=10&keyword=Java",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "keyword", "value": "Java" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Get conversation detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Detail trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Đúng conversationId', function () {",
+                  "    pm.expect(String(pm.response.json().data.id)).to.eql(pm.collectionVariables.get('conversationId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations", "{{conversationId}}"]
+            }
+          }
+        },
+        {
+          "name": "04. Rename conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rename trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Title đã đổi', function () {",
+                  "    pm.expect(pm.response.json().data.title).to.eql('Java Junior Mock Interview');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Java Junior Mock Interview\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations", "{{conversationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Chat",
+      "item": [
+        {
+          "name": "01. Get models",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Models trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.be.an('array').that.is.not.empty;"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/models",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "models"]
+            }
+          }
+        },
+        {
+          "name": "02. Send chat message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Chat trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Có câu trả lời', function () {",
+                  "    pm.expect(pm.response.json().data.response).to.include('dependency injection');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Explain dependency injection\",\n  \"conversation_id\": {{conversationId}},\n  \"modelName\": \"interview-coach\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat"]
+            }
+          }
+        },
+        {
+          "name": "03. Get chat history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('History trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data).to.be.an('array').that.is.not.empty;"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}/turns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations", "{{conversationId}}", "turns"]
+            }
+          }
+        },
+        {
+          "name": "04. Poll chat status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data.chatStatus).to.eql('completed');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}/chat-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations", "{{conversationId}}", "chat-status"]
+            }
+          }
+        },
+        {
+          "name": "05. Delete conversation - cleanup sau khi test chat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete trả 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations", "{{conversationId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Agents",
+      "item": [
+        {
+          "name": "01. Create agent - tự lưu agentId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create agent trả 201', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('agentId', String(body.data.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Daily Java Coach\",\n  \"description\": \"Creates Java interview questions\",\n  \"task_prompt\": \"Create one Java Junior interview question\",\n  \"schedule_type\": \"DAILY\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agent",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agent"]
+            }
+          }
+        },
+        {
+          "name": "02. List agents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('List agents trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data.agents).to.be.an('array').that.is.not.empty;"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agent?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agent"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03. Execute agent - tự lưu executionId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Execute trả 202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('executionId', body.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agent/{{agentId}}/executions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agent", "{{agentId}}", "executions"]
+            }
+          }
+        },
+        {
+          "name": "04. Get execution status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Execution status trả 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Status hợp lệ', function () {",
+                  "    pm.expect(['PENDING', 'RUNNING', 'COMPLETED']).to.include(pm.response.json().data.status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agent/{{agentId}}/executions/{{executionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agent", "{{agentId}}", "executions", "{{executionId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - RBAC",
+      "item": [
+        {
+          "name": "01. USER gọi Admin API - phải 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('USER bị từ chối với 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/demo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "demo"]
+            }
+          }
+        },
+        {
+          "name": "02. Login ADMIN - ghi đè accessToken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin login trả 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', body.data.token);",
+                  "pm.collectionVariables.set('refreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/email/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "email", "login"]
+            }
+          }
+        },
+        {
+          "name": "03. ADMIN gọi Admin API - phải 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('ADMIN được phép với 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(pm.response.json().data.permission).to.eql('ADMIN_GRANTED');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/demo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "demo"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Validation và Error Cases",
+      "item": [
+        {
+          "name": "01. Login sai mật khẩu - phải 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sai mật khẩu trả 400', function () { pm.response.to.have.status(400); });",
+                  "pm.expect(pm.response.json().code).to.eql('BAD_REQUEST');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/email/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "email", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Create conversation title rỗng - phải 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Validation trả 400', function () { pm.response.to.have.status(400); });",
+                  "pm.expect(pm.response.json().code).to.eql('VALIDATION_ERROR');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"   \"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chat_conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chat_conversations"]
+            }
+          }
+        },
+        {
+          "name": "03. Không có access token - phải 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Không token trả 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -75,6 +75,16 @@ interview. Phần liên hệ code frontend nằm ở
 File [requests.http](requests.http) chứa request mẫu cho IntelliJ HTTP Client. Có thể
 dùng Postman hoặc curl tương đương.
 
+### Postman
+
+Import collection và environment trong thư mục [postman](postman):
+
+- `SoftAIBox_Java_Lab.postman_collection.json`
+- `SoftAIBox_Local.postman_environment.json`
+
+Collection gồm 22 request, tự động lưu token và ID giữa các bước, đồng thời kiểm tra
+status code, response contract, validation và RBAC. Xem [hướng dẫn Postman](postman/README.md).
+
 ## Cấu trúc quan trọng
 
 ```text
@@ -98,4 +108,3 @@ src/main/java/vn/dangquangdat/javabegin
 Tham khảo: [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html),
 [Spring Boot system requirements](https://docs.spring.io/spring-boot/system-requirements.html),
 [Apache Maven downloads](https://maven.apache.org/download.cgi).
-
