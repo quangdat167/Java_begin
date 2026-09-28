@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: softaibox-java-lab
+  datasource:
+    url: jdbc:h2:mem:softaibox;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    # Chi dung cho local learning. Production phai doc secret tu secret manager/env.
+    secret: "local-learning-secret-must-be-at-least-32-bytes-change-me"
+    access-ttl: PT15M
+    refresh-ttl: P7D
+  cors:
+    allowed-origins: "http://localhost:5173"
+

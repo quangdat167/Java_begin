@@ -1,0 +1,8 @@
+services:
+  java-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_JWT_SECRET: "compose-local-secret-must-be-at-least-32-bytes-change-me"
+

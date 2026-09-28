@@ -1,0 +1,65 @@
+@baseUrl = http://localhost:8080
+@accessToken = paste-access-token-here
+@refreshToken = paste-refresh-token-here
+
+### Login USER
+POST {{baseUrl}}/api/v1/auth/email/login
+Content-Type: application/json
+
+{
+  "email": "dat@softaibox.local",
+  "password": "java123"
+}
+
+### Refresh - API contract giống interceptor của SoftAIBox UI
+POST {{baseUrl}}/api/v1/auth/refresh
+Authorization: Bearer {{refreshToken}}
+
+### Profile
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Create conversation
+POST {{baseUrl}}/api/v1/chat_conversations
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Java interview practice"
+}
+
+### List conversations
+GET {{baseUrl}}/api/v1/chat_conversations?page=1&limit=10&keyword=java
+Authorization: Bearer {{accessToken}}
+
+### Send chat - thay conversation_id bằng id vừa tạo
+POST {{baseUrl}}/api/v1/chat
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "message": "Explain dependency injection",
+  "conversation_id": 1,
+  "modelName": "interview-coach"
+}
+
+### Create agent
+POST {{baseUrl}}/api/v1/agent
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Daily Java Coach",
+  "description": "Creates one interview question every day",
+  "task_prompt": "Create a Java junior interview question",
+  "schedule_type": "DAILY"
+}
+
+### Execute agent - response là 202 Accepted
+POST {{baseUrl}}/api/v1/agent/1/executions
+Authorization: Bearer {{accessToken}}
+
+### Admin-only endpoint (đăng nhập bằng admin trước)
+GET {{baseUrl}}/api/v1/admin/demo
+Authorization: Bearer {{accessToken}}
+
