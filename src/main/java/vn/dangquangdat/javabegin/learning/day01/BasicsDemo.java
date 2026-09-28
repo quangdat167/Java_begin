@@ -2,7 +2,9 @@ package vn.dangquangdat.javabegin.learning.day01;
 
 import java.math.BigDecimal;
 
-/** Ngay 1: kieu du lieu, bien, String, record va entry point main. */
+/**
+ * Ngay 1: kieu du lieu, bien, String, record va entry point main.
+ */
 public class BasicsDemo {
 
     public static void main(String[] args) {
@@ -20,10 +22,15 @@ public class BasicsDemo {
                 "User=%s, model=%s, requests=%d, rate=%.1f%%, price=%s%n",
                 user.email(), displayName, requestCount, successRate, price
         );
+
     }
 
-    /** record la data carrier bat bien, gan voi type/interface DTO ben TypeScript. */
+    /**
+     * record la data carrier bat bien, gan voi type/interface DTO ben
+     * TypeScript.
+     */
     public record UserSummary(long id, String email, boolean active) {
+
         public UserSummary {
             if (id <= 0) {
                 throw new IllegalArgumentException("id must be positive");
@@ -34,4 +41,3 @@ public class BasicsDemo {
         }
     }
 }
-
