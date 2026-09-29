@@ -62,6 +62,9 @@ dùng [docs/PHONG-VAN-JAVA-JUNIOR.md](docs/PHONG-VAN-JAVA-JUNIOR.md) để tự 
 interview. Phần liên hệ code frontend nằm ở
 [docs/SOFTAIBOX-MAPPING.md](docs/SOFTAIBOX-MAPPING.md).
 
+README lý thuyết và bài tập chi tiết của từng ngày được tổng hợp tại
+[trung tâm học Java 14 ngày](src/main/java/vn/dangquangdat/javabegin/learning/README.md).
+
 ## Luồng API nên demo khi phỏng vấn
 
 1. `POST /api/v1/auth/email/login` lấy access/refresh token.
