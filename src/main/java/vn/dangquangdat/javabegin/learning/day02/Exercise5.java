@@ -41,7 +41,7 @@ public class Exercise5 {
         try {
             long usage = Long.parseLong(rawUsage.trim());
             return usage;
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Usage must be a number");
         }
     }
