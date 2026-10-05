@@ -1,0 +1,9 @@
+{
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.formatOnSave": true,
+        "editor.rulers": [80]
+    },
+    "java.format.settings.url": ".vscode/java-formatter.xml",
+    "java.format.settings.profile": "JavaBegin"
+}
